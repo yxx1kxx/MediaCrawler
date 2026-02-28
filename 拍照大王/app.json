@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Pose Camera",
+    "slug": "pose-camera",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#111111"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "需要相机权限用于拍照。",
+        "NSPhotoLibraryAddUsageDescription": "需要相册权限用于保存照片。",
+        "NSPhotoLibraryUsageDescription": "需要读取相册用于导入姿势参考图。"
+      }
+    },
+    "android": {
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-media-library"
+    ]
+  }
+}
