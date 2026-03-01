@@ -27,9 +27,9 @@ type Props = HomeCameraProps | TemplateCameraProps | GroupCameraProps;
 
 const ZOOM_PRESETS = [
   { label: '.5', value: 0 },
-  { label: '1x', value: 0.12 },
-  { label: '2', value: 0.28 },
-  { label: '3', value: 0.42 }
+  { label: '1x', value: 0 },
+  { label: '2', value: 0.2 },
+  { label: '3', value: 0.35 }
 ] as const;
 
 export function CameraScreen({ navigation }: Props) {
@@ -43,7 +43,7 @@ export function CameraScreen({ navigation }: Props) {
   const [flash, setFlash] = useState<'off' | 'on'>('off');
   const [cameraMode, setCameraMode] = useState<'picture' | 'video'>('picture');
   const [liveEnabled, setLiveEnabled] = useState(false);
-  const [zoom, setZoom] = useState(0.12);
+  const [zoom, setZoom] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [groupPanelVisible, setGroupPanelVisible] = useState(false);
   const askedAlbumPermissionRef = useRef(false);
@@ -82,11 +82,22 @@ export function CameraScreen({ navigation }: Props) {
     setActiveActionId(shootingTemplates[0].id);
   }, [shootingGroupId, shootingTemplates]);
 
-  const topReserved = insets.top + 54;
-  const bottomReserved = insets.bottom + 180;
+  const isCompactIphone = screenHeight <= 760;
+  const isLargeIphone = screenHeight >= 900;
+  const hasHomeIndicator = insets.bottom >= 30;
+  const topReserved =
+    insets.top +
+    (isCompactIphone ? 50 : isLargeIphone ? (hasHomeIndicator ? 60 : 58) : hasHomeIndicator ? 56 : 54);
+  const bottomReserved =
+    insets.bottom +
+    (isCompactIphone ? (hasHomeIndicator ? 168 : 164) : isLargeIphone ? (hasHomeIndicator ? 206 : 202) : hasHomeIndicator ? 188 : 184);
   const iphonePhotoPreviewHeight = Math.round(screenWidth * (4 / 3));
   const availablePreviewHeight = Math.max(280, screenHeight - topReserved - bottomReserved);
   const previewHeight = Math.min(iphonePhotoPreviewHeight, availablePreviewHeight);
+  const topBarOffset = Math.max(2, insets.top * 0.08) + (isCompactIphone ? 0 : hasHomeIndicator ? 3 : 2);
+  const bottomPanelPadding = isCompactIphone ? (hasHomeIndicator ? 4 : 2) : isLargeIphone ? (hasHomeIndicator ? 12 : 10) : hasHomeIndicator ? 8 : 6;
+  const controlsRowHeight = isCompactIphone ? (hasHomeIndicator ? 78 : 76) : isLargeIphone ? (hasHomeIndicator ? 86 : 84) : hasHomeIndicator ? 82 : 80;
+  const bottomPanelTopPadding = isCompactIphone ? 10 : hasHomeIndicator ? 14 : 12;
 
   const refreshLatestLibraryThumb = useCallback(async () => {
     try {
@@ -290,7 +301,7 @@ export function CameraScreen({ navigation }: Props) {
       </View>
 
       <SafeAreaView style={styles.overlay}>
-        <View style={[styles.topBar, { marginTop: Math.max(2, insets.top * 0.08) }]}>
+        <View style={[styles.topBar, { marginTop: topBarOffset }]}>
           <Pressable onPress={() => navigation.goBack()} style={styles.iconBtn}>
             <Text style={styles.iconText}>⌄</Text>
           </Pressable>
@@ -363,7 +374,7 @@ export function CameraScreen({ navigation }: Props) {
           <Pressable style={styles.dismissLayer} onPress={closePanels} />
         ) : null}
 
-        <View style={styles.bottomPanel}>
+        <View style={[styles.bottomPanel, { paddingTop: bottomPanelTopPadding, paddingBottom: bottomPanelPadding }]}>
           <View style={styles.metaRow}>
             <Text style={styles.bottomText}>
               {shootingGroup?.name ?? '图组'} / {activeActionName}
@@ -409,7 +420,7 @@ export function CameraScreen({ navigation }: Props) {
             })}
           </View>
 
-          <View style={styles.controlsRow}>
+          <View style={[styles.controlsRow, { height: controlsRowHeight }]}>
             <Pressable style={styles.previewThumb} onPress={openSystemAlbum}>
               {latestLibraryUri ? (
                 <Image source={{ uri: latestLibraryUri }} style={styles.previewImage} />
@@ -440,7 +451,6 @@ export function CameraScreen({ navigation }: Props) {
             <Pressable onPress={() => setCameraMode('picture')}>
               <Text style={[styles.modeText, cameraMode === 'picture' && styles.modeActive]}>照片</Text>
             </Pressable>
-            <Text style={styles.modeText}>人像</Text>
           </View>
         </View>
       </SafeAreaView>
@@ -620,25 +630,25 @@ const styles = StyleSheet.create({
   },
   bottomPanel: {
     paddingBottom: 4,
-    backgroundColor: 'rgba(0,0,0,0.52)'
+    backgroundColor: '#000000'
   },
   metaRow: {
-    minHeight: 28,
+    minHeight: 24,
     paddingHorizontal: 14,
-    paddingTop: 6,
+    paddingTop: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
   },
   actionList: {
-    minHeight: 34,
+    minHeight: 30,
     alignItems: 'center',
     paddingHorizontal: 14,
     gap: 8,
-    paddingTop: 4
+    paddingTop: 2
   },
   zoomRow: {
-    height: 34,
+    height: 30,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -758,7 +768,7 @@ const styles = StyleSheet.create({
     opacity: 0.6
   },
   modeRow: {
-    height: 28,
+    height: 24,
     paddingHorizontal: 16,
     justifyContent: 'center',
     flexDirection: 'row',
